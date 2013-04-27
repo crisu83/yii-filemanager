@@ -21,7 +21,7 @@ class FileManager extends CApplicationComponent
 	 */
 	public $filePath = 'webroot.files';
 
-	private $_filePath;
+	private $_basePath;
 
 	/**
 	 * Initializes the component.
@@ -67,7 +67,7 @@ class FileManager extends CApplicationComponent
 				$model->path = trim($path, '/');
 			if ($model->save() === false)
 				throw new CException('Failed to save file. Database record could not be saved.');
-			$filePath = $this->getFilePath() . $model->resolvePath();
+			$filePath = $this->getBasePath() . $model->resolvePath();
 			if (!file_exists($filePath) && !$this->createDirectory($filePath))
 				throw new CException('Failed to save file. Directory could not be created.');
 			$filePath .= $model->resolveFilename();
@@ -76,7 +76,7 @@ class FileManager extends CApplicationComponent
 			$trx->commit();
 			return $model;
 		}
-		catch (\CException $e)
+		catch (CException $e)
 		{
 			$trx->rollback();
 			throw $e;
@@ -115,15 +115,24 @@ class FileManager extends CApplicationComponent
 	}
 
 	/**
+	 * @param File $model
+	 * @return string
+	 */
+	public function resolvePathForFile($model)
+	{
+		return $this->getBasePath() . $model->resolveFilePath();
+	}
+
+	/**
 	 * Returns the path for storing files.
 	 * @return string the path.
 	 */
-	public function getFilePath()
+	public function getBasePath()
 	{
-		if (isset($this->_filePath))
-			return $this->_filePath;
+		if (isset($this->_basePath))
+			return $this->_basePath;
 		else
-			return $this->_filePath = Yii::getPathOfAlias($this->filePath) . '/';
+			return $this->_basePath = Yii::getPathOfAlias($this->filePath) . '/';
 	}
 
 	/**
@@ -145,6 +154,7 @@ class FileManager extends CApplicationComponent
 	 */
 	protected function normalizeFilename($name)
 	{
-		return str_replace(str_split('-/\?%*:|"<>. '), '', $name);
+		$name = str_replace(str_split('/\?%*:|"<>'), '', $name);
+		return str_replace(' ', '-', $name); // for convenience
 	}
 }
