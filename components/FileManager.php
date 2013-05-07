@@ -17,11 +17,20 @@ use crisu83\yii_extension\behaviors\ComponentBehavior;
 class FileManager extends CApplicationComponent
 {
 	/**
-	 * @var string the path for storing the files.
+	 * @var string name of the files directory.
 	 */
-	public $filePath = 'webroot.files';
+	public $fileDir = 'files';
+	/**
+	 * @var string the base path (defaults to 'webroot').
+	 */
+	public $basePath = 'webroot';
+	/**
+	 * @var string the base url. If omitted the base url for the request will be used.
+	 */
+	public $baseUrl;
 
 	private $_basePath;
+	private $_baseUrl;
 
 	/**
 	 * Initializes the component.
@@ -42,45 +51,33 @@ class FileManager extends CApplicationComponent
 	 * @throws CException if saving the image fails.
 	 * @return File the model.
 	 */
-	public function save($file, $name = null, $path = null)
+	public function saveFile($file, $name = null, $path = null)
 	{
 		if (!$file instanceof CUploadedFile)
 			throw new CException('Failed to save file. File is not an instance of CUploadedFile.');
-		/* @var CDbConnection $db */
-		$db = $this->getDbConnection();
-		$trx = $db->beginTransaction();
-		try
+		$model = new File;
+		$model->extension = strtolower($file->getExtensionName());
+		$model->filename = $file->getName();
+		$model->mimeType = $file->getType();
+		$model->byteSize = $file->getSize();
+		$model->createdAt = date('Y-m-d H:i:s');
+		if ($name === null)
 		{
-			$model = new File;
-			$model->extension = strtolower($file->getExtensionName());
-			$model->filename = $file->getName();
-			$model->mimeType = $file->getType();
-			$model->byteSize = $file->getSize();
-			$model->createdAt = date('Y-m-d H:i:s');
-			if ($name === null)
-			{
-				$filename = $model->filename;
-				$name = substr($filename, 0, strrpos($filename, '.'));
-			}
-			$model->name = $this->normalizeFilename($name);
-			if ($path !== null)
-				$model->path = trim($path, '/');
-			if ($model->save() === false)
-				throw new CException('Failed to save file. Database record could not be saved.');
-			$filePath = $this->getBasePath() . $model->resolvePath();
-			if (!file_exists($filePath) && !$this->createDirectory($filePath))
-				throw new CException('Failed to save file. Directory could not be created.');
-			$filePath .= $model->resolveFilename();
-			if ($file->saveAs($filePath) === false)
-				throw new CException('Failed to save file. File could not be saved.');
-			$trx->commit();
-			return $model;
+			$filename = $model->filename;
+			$name = substr($filename, 0, strrpos($filename, '.'));
 		}
-		catch (CException $e)
-		{
-			$trx->rollback();
-			throw $e;
-		}
+		$model->name = $this->normalizeFilename($name);
+		if ($path !== null)
+			$model->path = trim($path, '/');
+		if ($model->save() === false)
+			throw new CException('Failed to save file. Database record could not be saved.');
+		$filePath = $this->getBasePath() . $model->resolvePath();
+		if (!file_exists($filePath) && !$this->createDirectory($filePath))
+			throw new CException('Failed to save file. Directory could not be created.');
+		$filePath .= $model->resolveFilename();
+		if ($file->saveAs($filePath) === false)
+			throw new CException('Failed to save file. File could not be saved.');
+		return $model;
 	}
 
 	/**
@@ -89,7 +86,7 @@ class FileManager extends CApplicationComponent
 	 * @return File the model.
 	 * @throws CException if loading the file fails.
 	 */
-	public function load($id)
+	public function loadFile($id)
 	{
 		$model = File::model()->findByPk($id);
 		if ($model === null)
@@ -103,9 +100,9 @@ class FileManager extends CApplicationComponent
 	 * @return boolean whether the file was successfully deleted.
 	 * @throws CException if deleting the file fails.
 	 */
-	public function delete($id)
+	public function deleteFile($id)
 	{
-		$model = $this->load($id);
+		$model = $this->loadFile($id);
 		$filePath = $model->resolveFilePath();
 		if (file_exists($filePath) !== false && unlink($filePath) === false)
 			throw new CException('Failed to delete file. File could not be deleted.');
@@ -115,16 +112,42 @@ class FileManager extends CApplicationComponent
 	}
 
 	/**
-	 * @param File $model
-	 * @return string
+	 * Returns the relative url for the given model.
+	 * @param File $model the file model.
+	 * @return string the url.
 	 */
-	public function resolvePathForFile($model)
+	public function resolveFileUrl($model)
+	{
+		return $this->getBaseUrl() . $model->resolveFilePath();
+	}
+
+	/**
+	 * Returns the full path for the given model.
+	 * @param File $model the file model.
+	 * @return string the path.
+	 */
+	public function resolveFilePath($model)
 	{
 		return $this->getBasePath() . $model->resolveFilePath();
 	}
 
 	/**
-	 * Returns the path for storing files.
+	 * Returns the url to the files directory.
+	 * @return string the url.
+	 */
+	public function getBaseUrl()
+	{
+		if (isset($this->_baseUrl))
+			return $this->_baseUrl;
+		else
+		{
+			$baseUrl = isset($this->baseUrl) ? $this->baseUrl : Yii::app()->request->baseUrl;
+			return $this->_baseUrl = $baseUrl . '/' . $this->fileDir . '/';
+		}
+	}
+
+	/**
+	 * Returns the path to the files directory.
 	 * @return string the path.
 	 */
 	public function getBasePath()
@@ -132,7 +155,7 @@ class FileManager extends CApplicationComponent
 		if (isset($this->_basePath))
 			return $this->_basePath;
 		else
-			return $this->_basePath = Yii::getPathOfAlias($this->filePath) . '/';
+			return $this->_basePath = Yii::getPathOfAlias($this->basePath) . '/' . $this->fileDir . '/';
 	}
 
 	/**
