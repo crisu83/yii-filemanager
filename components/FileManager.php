@@ -7,9 +7,7 @@
  * @package crisu83.yii-filemanager.components
  */
 
-Yii::import('vendor.crisu83.yii-extension.behaviors.ComponentBehavior', true/* force include */);
-
-use crisu83\yii_extension\behaviors\ComponentBehavior;
+Yii::import('vendor.crisu83.yii-extension.behaviors.ComponentBehavior');
 
 /**
  * Application component for managing files.
@@ -49,8 +47,7 @@ class FileManager extends CApplicationComponent
 		/* @var CDbConnection $db */
 		$db = $this->getDbConnection();
 		$trx = $db->beginTransaction();
-		try
-		{
+		try {
 			$model = new File;
 			$model->extension = strtolower($file->getExtensionName());
 			$model->filename = $file->getName();
@@ -75,9 +72,7 @@ class FileManager extends CApplicationComponent
 				throw new CException('Failed to save file. File could not be saved.');
 			$trx->commit();
 			return $model;
-		}
-		catch (CException $e)
-		{
+		} catch (CException $e) {
 			$trx->rollback();
 			throw $e;
 		}

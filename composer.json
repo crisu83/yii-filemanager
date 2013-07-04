@@ -2,15 +2,15 @@
     "name": "crisu83/yii-filemanager",
     "description": "File manager for the Yii PHP framework.",
 	"type": "yii-extension",
-    "require": {
-        "crisu83/yii-extension": "dev-master"
-    },
     "license": "BSD-3-Clause",
-    "authors": [
+	"authors": [
         {
             "name": "Christoffer Niska",
             "email": "ChristofferNiska@gmail.com"
         }
     ],
-    "minimum-stability": "dev"
+	"minimum-stability": "dev",
+	"require": {
+		"crisu83/yii-extension": "@no-namespaces"
+	}
 }
