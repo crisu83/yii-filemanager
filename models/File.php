@@ -107,7 +107,7 @@ class File extends CActiveRecord
 	 */
 	public function resolveFilename()
 	{
-		return $this->name . '.' . $this->extension;
+		return $this->name . '-' . $this->id . '.' . $this->extension;
 	}
 
 	/**
