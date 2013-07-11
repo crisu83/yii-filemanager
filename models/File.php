@@ -20,111 +20,131 @@
  * @property string $byteSize
  * @property string $createdAt
  */
-class File extends CActiveRecord
+class File extends ActiveRecord
 {
-	/**
-	 * Returns the static model of the specified AR class.
-	 * @param string $className active record class name.
-	 * @return File the static model class
-	 */
-	public static function model($className = __CLASS__)
-	{
-		return parent::model($className);
-	}
+    /** @var FileManager */
+    protected $_manager;
 
-	/**
-	 * @return string the associated database table name
-	 */
-	public function tableName()
-	{
-		return 'file';
-	}
+    /**
+     * Returns the static model of the specified AR class.
+     * @param string $className active record class name.
+     * @return File the static model class
+     */
+    public static function model($className = __CLASS__)
+    {
+        return parent::model($className);
+    }
 
-	/**
-	 * @return array validation rules for model attributes.
-	 */
-	public function rules()
-	{
-		return array(
-			array('name, extension, filename, mimeType, byteSize, createdAt', 'required'),
-			array('name, path, extension, filename, mimeType', 'length', 'max' => 255),
-			array('byteSize', 'length', 'max' => 10),
-			// The following rule is used by search().
-			array('id, name, path, extension, filename, mimeType, byteSize, createdAt', 'safe', 'on' => 'search'),
-		);
-	}
+    /**
+     * @return string the associated database table name
+     */
+    public function tableName()
+    {
+        return 'file';
+    }
 
-	/**
-	 * @return array relational rules.
-	 */
-	public function relations()
-	{
-		return array();
-	}
+    /**
+     * @return array validation rules for model attributes.
+     */
+    public function rules()
+    {
+        return array(
+            array('name, extension, filename, mimeType, byteSize, createdAt', 'required'),
+            array('name, path, extension, filename, mimeType', 'length', 'max' => 255),
+            array('byteSize', 'length', 'max' => 10),
+            // The following rule is used by search().
+            array('id, name, path, extension, filename, mimeType, byteSize, createdAt', 'safe', 'on' => 'search'),
+        );
+    }
 
-	/**
-	 * @return array customized attribute labels (name=>label)
-	 */
-	public function attributeLabels()
-	{
-		return array(
-			'id' => Yii::t('label', 'ID'),
-			'name' => Yii::t('label', 'Name'),
-			'path' => Yii::t('label', 'Path'),
-			'extension' => Yii::t('label', 'Extension'),
-			'filename' => Yii::t('label', 'Filename'),
-			'mimeType' => Yii::t('label', 'Mime Type'),
-			'byteSize' => Yii::t('label', 'Byte Size'),
-			'createdAt' => Yii::t('label', 'Created At'),
-		);
-	}
+    /**
+     * @return array relational rules.
+     */
+    public function relations()
+    {
+        return array();
+    }
 
-	/**
-	 * Retrieves a list of models based on the current search/filter conditions.
-	 * @return CActiveDataProvider the data provider that can return the models based on the search/filter conditions.
-	 */
-	public function search()
-	{
-		$criteria = new CDbCriteria;
+    /**
+     * @return array customized attribute labels (name=>label)
+     */
+    public function attributeLabels()
+    {
+        return array(
+            'id' => Yii::t('label', 'ID'),
+            'name' => Yii::t('label', 'Name'),
+            'path' => Yii::t('label', 'Path'),
+            'extension' => Yii::t('label', 'Extension'),
+            'filename' => Yii::t('label', 'Filename'),
+            'mimeType' => Yii::t('label', 'Mime type'),
+            'byteSize' => Yii::t('label', 'Byte size'),
+            'createdAt' => Yii::t('label', 'Created'),
+        );
+    }
 
-		$criteria->compare('id', $this->id);
-		$criteria->compare('name', $this->name, true);
-		$criteria->compare('path', $this->path, true);
-		$criteria->compare('extension', $this->extension, true);
-		$criteria->compare('filename', $this->filename, true);
-		$criteria->compare('mimeType', $this->mimeType, true);
-		$criteria->compare('byteSize', $this->byteSize, true);
-		$criteria->compare('createdAt', $this->createdAt, true);
+    /**
+     * Retrieves a list of models based on the current search/filter conditions.
+     * @return CActiveDataProvider the data provider that can return the models based on the search/filter conditions.
+     */
+    public function search()
+    {
+        $criteria = new CDbCriteria;
 
-		return new CActiveDataProvider($this, array(
-			'criteria' => $criteria,
-		));
-	}
+        $criteria->compare('id', $this->id);
+        $criteria->compare('name', $this->name, true);
+        $criteria->compare('path', $this->path, true);
+        $criteria->compare('extension', $this->extension, true);
+        $criteria->compare('filename', $this->filename, true);
+        $criteria->compare('mimeType', $this->mimeType, true);
+        $criteria->compare('byteSize', $this->byteSize, true);
+        $criteria->compare('createdAt', $this->createdAt, true);
 
-	/**
-	 * Returns the full filename for this file.
-	 * @return string the filename.
-	 */
-	public function resolveFilename()
-	{
-		return $this->name . '-' . $this->id . '.' . $this->extension;
-	}
+        return new CActiveDataProvider($this, array(
+            'criteria' => $criteria,
+        ));
+    }
 
-	/**
-	 * Returns the relative path for this file.
-	 * @return string the path.
-	 */
-	public function resolvePath()
-	{
-		return $this->path !== null ? $this->path . '/' : '';
-	}
+    /**
+     * Returns the full filename for this file.
+     * @return string the filename.
+     */
+    public function resolveFilename()
+    {
+        return $this->name . '-' . $this->id . '.' . $this->extension;
+    }
 
-	/**
-	 * Returns the full path with the filename for this file.
-	 * @return string the path.
-	 */
-	public function resolveFilePath()
-	{
-		return $this->resolvePath() . $this->resolveFilename();
-	}
+    /**
+     * Returns the url for this file.
+     * @return string the url.
+     */
+    public function resolveUrl()
+    {
+        return $this->_manager->resolveFileUrl($this);
+    }
+
+    /**
+     * Returns the path for this file.
+     * @return string the path.
+     */
+    public function resolvePath()
+    {
+        return $this->_manager->resolveFilePath($this);
+    }
+
+    /**
+     * Returns the full path with the filename for this file.
+     * @return string the path.
+     */
+    public function resolveFullPath()
+    {
+        return $this->resolvePath() . $this->resolveFilename();
+    }
+
+    /**
+     * @param FileManager $manager
+     */
+    public function setManager($manager)
+    {
+        $this->_manager = $manager;
+    }
 }
