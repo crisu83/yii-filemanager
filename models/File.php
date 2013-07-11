@@ -119,7 +119,7 @@ class File extends ActiveRecord
      */
     public function resolveUrl()
     {
-        return $this->_manager->resolveFileUrl($this);
+        return $this->_manager->getBaseUrl() . $this->resolveInternalPath();
     }
 
     /**
@@ -128,16 +128,17 @@ class File extends ActiveRecord
      */
     public function resolvePath()
     {
-        return $this->_manager->resolveFilePath($this);
+        return $this->_manager->getBasePath() . $this->resolveInternalPath();
     }
 
     /**
-     * Returns the full path with the filename for this file.
+     * Returns the internal path to the within the sub-directory.
      * @return string the path.
      */
-    public function resolveFullPath()
+    protected function resolveInternalPath()
     {
-        return $this->resolvePath() . $this->resolveFilename();
+        $path = $this->path !== null ? $this->path . '/' : '';
+        return $path . $this->resolveFilename();
     }
 
     /**

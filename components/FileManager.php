@@ -26,6 +26,10 @@ class FileManager extends CApplicationComponent
      * @var string the base url. If omitted the base url for the request will be used.
      */
     public $baseUrl;
+    /**
+     * @var string the name of the file model class.
+     */
+    public $modelClass = 'File';
 
     private $_basePath;
     private $_baseUrl;
@@ -53,7 +57,8 @@ class FileManager extends CApplicationComponent
     {
         if (!$file instanceof CUploadedFile)
             throw new CException('Failed to save file. File is not an instance of CUploadedFile.');
-        $model = new File;
+        /* @var File $model */
+        $model = new $this->modelClass;
         $model->setManager($this);
         $model->extension = strtolower($file->getExtensionName());
         $model->filename = $file->getName();
@@ -68,7 +73,7 @@ class FileManager extends CApplicationComponent
         $model->name = $this->normalizeFilename($name);
         if ($path !== null)
             $model->path = trim($path, '/');
-        if ($model->save() === false)
+        if (!$model->save())
             throw new CException('Failed to save file. Database record could not be saved.');
         $filePath = $model->resolvePath();
         if (!file_exists($filePath) && !$this->createDirectory($filePath))
@@ -104,32 +109,12 @@ class FileManager extends CApplicationComponent
     public function deleteModel($id)
     {
         $model = $this->loadModel($id);
-        $filePath = $model->resolveFilePath();
+        $filePath = $model->resolvePath();
         if (file_exists($filePath) && !unlink($filePath))
             throw new CException('Failed to delete file. File could not be deleted.');
         if (!$model->delete())
             throw new CException('Failed to delete file. Database record could not be deleted.');
         return true;
-    }
-
-    /**
-     * Returns the relative url for the given model.
-     * @param File $model the file model.
-     * @return string the url.
-     */
-    public function resolveFileUrl($model)
-    {
-        return $this->getBaseUrl() . $model->resolveFilePath();
-    }
-
-    /**
-     * Returns the full path for the given model.
-     * @param File $model the file model.
-     * @return string the path.
-     */
-    public function resolveFilePath($model)
-    {
-        return $this->getBasePath() . $model->resolveFilePath();
     }
 
     /**
