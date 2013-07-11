@@ -11,6 +11,9 @@ Yii::import('vendor.crisu83.yii-extension.behaviors.ComponentBehavior');
 
 /**
  * Application component for managing files.
+ *
+ * @method createPathAlias($alias, $path) via ComponentBehavior
+ * @method import($alias) via ComponentBehavior
  */
 class FileManager extends CApplicationComponent
 {
@@ -30,9 +33,6 @@ class FileManager extends CApplicationComponent
      * @var string the name of the file model class.
      */
     public $modelClass = 'File';
-
-    private $_basePath;
-    private $_baseUrl;
 
     /**
      * Initializes the component.
@@ -55,32 +55,36 @@ class FileManager extends CApplicationComponent
      */
     public function saveModel($file, $name = null, $path = null)
     {
-        if (!$file instanceof CUploadedFile)
+        if (!$file instanceof CUploadedFile) {
             throw new CException('Failed to save file. File is not an instance of CUploadedFile.');
+        }
         /* @var File $model */
         $model = new $this->modelClass;
         $model->setManager($this);
         $model->extension = strtolower($file->getExtensionName());
-        $model->filename = $file->getName();
-        $model->mimeType = $file->getType();
-        $model->byteSize = $file->getSize();
+        $model->filename  = $file->getName();
+        $model->mimeType  = $file->getType();
+        $model->byteSize  = $file->getSize();
         $model->createdAt = date('Y-m-d H:i:s');
-        if ($name === null)
-        {
+        if ($name === null) {
             $filename = $model->filename;
-            $name = substr($filename, 0, strrpos($filename, '.'));
+            $name     = substr($filename, 0, strrpos($filename, '.'));
         }
         $model->name = $this->normalizeFilename($name);
-        if ($path !== null)
+        if ($path !== null) {
             $model->path = trim($path, '/');
-        if (!$model->save())
+        }
+        if (!$model->save()) {
             throw new CException('Failed to save file. Database record could not be saved.');
-        $filePath = $model->resolvePath();
-        if (!file_exists($filePath) && !$this->createDirectory($filePath))
+        }
+        $filePath = $this->getBasePath() . $model->getPath();
+        if (!file_exists($filePath) && !$this->createDirectory($filePath)) {
             throw new CException('Failed to save file. Directory could not be created.');
+        }
         $filePath .= $model->resolveFilename();
-        if (!$file->saveAs($filePath))
+        if (!$file->saveAs($filePath)) {
             throw new CException('Failed to save file. File could not be saved.');
+        }
         return $model;
     }
 
@@ -94,8 +98,9 @@ class FileManager extends CApplicationComponent
     {
         /* @var File $model */
         $model = File::model()->findByPk($id);
-        if ($model === null)
+        if ($model === null) {
             throw new CException('Failed to load file. Database record not found.');
+        }
         $model->setManager($this);
         return $model;
     }
@@ -108,40 +113,43 @@ class FileManager extends CApplicationComponent
      */
     public function deleteModel($id)
     {
-        $model = $this->loadModel($id);
+        $model    = $this->loadModel($id);
         $filePath = $model->resolvePath();
-        if (file_exists($filePath) && !unlink($filePath))
+        if (file_exists($filePath) && !unlink($filePath)) {
             throw new CException('Failed to delete file. File could not be deleted.');
-        if (!$model->delete())
+        }
+        if (!$model->delete()) {
             throw new CException('Failed to delete file. Database record could not be deleted.');
+        }
         return true;
     }
 
     /**
-     * Returns the url to the files directory.
+     * Returns the url to the files folder.
+     * @param boolean $absolute whether to return an absolute url.
      * @return string the url.
      */
-    public function getBaseUrl()
+    public function getBaseUrl($absolute = false)
     {
-        if (isset($this->_baseUrl))
-            return $this->_baseUrl;
-        else
-        {
-            $baseUrl = isset($this->baseUrl) ? $this->baseUrl : Yii::app()->request->baseUrl;
-            return $this->_baseUrl = $baseUrl . '/' . $this->fileDir . '/';
+        $url = '';
+        if ($absolute) {
+            $url .= ($this->baseUrl !== null ? $this->baseUrl : Yii::app()->request->baseUrl) . '/';
         }
+        return $url . $this->fileDir . '/';
     }
 
     /**
-     * Returns the path to the files directory.
+     * Returns the path to the files folder.
+     * @param boolean $absolute whether to return an absolute path.
      * @return string the path.
      */
-    public function getBasePath()
+    public function getBasePath($absolute = false)
     {
-        if (isset($this->_basePath))
-            return $this->_basePath;
-        else
-            return $this->_basePath = Yii::getPathOfAlias($this->basePath) . '/' . $this->fileDir . '/';
+        $path = '';
+        if ($absolute) {
+            $path .= Yii::getPathOfAlias($this->basePath) . '/';
+        }
+        return $path . $this->fileDir . '/';
     }
 
     /**

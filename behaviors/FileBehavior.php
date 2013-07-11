@@ -88,9 +88,10 @@ class FileBehavior extends CActiveRecordBehavior
      */
     public function getFileManager()
     {
-        if (isset($this->_fileManager))
+        if (isset($this->_fileManager)) {
             return $this->_fileManager;
-        else
+        } else {
             return $this->_fileManager = Yii::app()->getComponent($this->componentID);
+        }
     }
 }

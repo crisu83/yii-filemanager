@@ -71,13 +71,13 @@ class File extends ActiveRecord
     public function attributeLabels()
     {
         return array(
-            'id' => Yii::t('label', 'ID'),
-            'name' => Yii::t('label', 'Name'),
-            'path' => Yii::t('label', 'Path'),
+            'id'        => Yii::t('label', 'ID'),
+            'name'      => Yii::t('label', 'Name'),
+            'path'      => Yii::t('label', 'Path'),
             'extension' => Yii::t('label', 'Extension'),
-            'filename' => Yii::t('label', 'Filename'),
-            'mimeType' => Yii::t('label', 'Mime type'),
-            'byteSize' => Yii::t('label', 'Byte size'),
+            'filename'  => Yii::t('label', 'Filename'),
+            'mimeType'  => Yii::t('label', 'Mime type'),
+            'byteSize'  => Yii::t('label', 'Byte size'),
             'createdAt' => Yii::t('label', 'Created'),
         );
     }
@@ -137,8 +137,15 @@ class File extends ActiveRecord
      */
     protected function resolveInternalPath()
     {
-        $path = $this->path !== null ? $this->path . '/' : '';
-        return $path . $this->resolveFilename();
+        return $this->getPath() . $this->resolveFilename();
+    }
+
+    /**
+     * @return string
+     */
+    public function getPath()
+    {
+        return $this->path !== null ? $this->path . '/' : '';
     }
 
     /**
