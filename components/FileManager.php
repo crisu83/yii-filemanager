@@ -169,13 +169,13 @@ class FileManager extends CApplicationComponent
      * @param boolean $absolute whether to return an absolute path.
      * @return string the path.
      */
-    public function getBasePath($absolute = false)
+    public function getBasePath($absolute = true)
     {
         $path = '';
         if ($absolute) {
-            $path .= Yii::getPathOfAlias($this->basePath) . '/';
+            $path .= Yii::getPathOfAlias($this->basePath) . DIRECTORY_SEPARATOR;
         }
-        return $path . $this->fileDir . '/';
+        return $path . $this->fileDir . DIRECTORY_SEPARATOR;
     }
 
     /**
