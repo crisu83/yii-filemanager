@@ -141,7 +141,17 @@ class File extends ActiveRecord
     }
 
     /**
-     * @return string
+     * Returns the contents of this file as a string.
+     * @return string the contents.
+     */
+    public function getContents()
+    {
+        return file_get_contents($this->resolvePath());
+    }
+
+    /**
+     * Returns the internal path to this file.
+     * @return string the path.
      */
     public function getPath()
     {
@@ -149,7 +159,8 @@ class File extends ActiveRecord
     }
 
     /**
-     * @param FileManager $manager
+     * Returns the file manager component.
+     * @param FileManager $manager the component.
      */
     public function setManager($manager)
     {

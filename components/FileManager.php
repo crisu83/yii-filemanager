@@ -125,6 +125,32 @@ class FileManager extends CApplicationComponent
     }
 
     /**
+     * Sends the file associated with the given model to the user.
+     * @param File $file the file model.
+     * @param boolean $terminate whether to terminate the current application after calling this method.
+     * @see CHttpRequest::sendFile
+     */
+    public function sendFile($file, $terminate = true)
+    {
+        $filename = $file->resolveFilename();
+        $content = $file->getContents();
+        $mimeType = $file->mimeType;
+        Yii::app()->request->sendFile($filename, $content, $mimeType, $terminate);
+    }
+
+    /**
+     * Sends the file associated with the given model to the user using x-sendfile.
+     * @param File $file the file model.
+     * @param array $options additional options.
+     * @see CHttpRequest::xSendFile
+     */
+    public function xSendFile($file, $options = array())
+    {
+        $filePath = $file->resolvePath();
+        Yii::app()->request->xSendFile($filePath, $options);
+    }
+
+    /**
      * Returns the url to the files folder.
      * @param boolean $absolute whether to return an absolute url.
      * @return string the url.
