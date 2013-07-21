@@ -41,7 +41,7 @@ class FileManager extends CApplicationComponent
     {
         parent::init();
         $this->attachBehavior('ext', new ComponentBehavior);
-        $this->createPathAlias('fileManager', __DIR__ . DIRECTORY_SEPARATOR . '..');
+        $this->createPathAlias('fileManager', realpath(__DIR__ . DIRECTORY_SEPARATOR . '..'));
         $this->import('models.*');
     }
 
@@ -157,11 +157,12 @@ class FileManager extends CApplicationComponent
      */
     public function getBaseUrl($absolute = false)
     {
-        $url = '';
+        $url = array();
         if ($absolute) {
-            $url .= ($this->baseUrl !== null ? $this->baseUrl : Yii::app()->request->baseUrl) . '/';
+            $url[] = $this->baseUrl !== null ? $this->baseUrl : Yii::app()->request->baseUrl;
         }
-        return $url . $this->fileDir . '/';
+        $url[] = $this->fileDir;
+        return implode('/', $url);
     }
 
     /**
@@ -171,11 +172,12 @@ class FileManager extends CApplicationComponent
      */
     public function getBasePath($absolute = true)
     {
-        $path = '';
+        $path = array();
         if ($absolute) {
-            $path .= Yii::getPathOfAlias($this->basePath) . DIRECTORY_SEPARATOR;
+            $path[] = Yii::getPathOfAlias($this->basePath);
         }
-        return $path . $this->fileDir . DIRECTORY_SEPARATOR;
+        $path[] = $this->fileDir;
+        return implode('/', $path);
     }
 
     /**

@@ -119,7 +119,7 @@ class File extends ActiveRecord
      */
     public function resolveUrl()
     {
-        return $this->_manager->getBaseUrl() . $this->resolveInternalPath();
+        return $this->_manager->getBaseUrl() . '/' . $this->resolveInternalPath();
     }
 
     /**
@@ -128,7 +128,7 @@ class File extends ActiveRecord
      */
     public function resolvePath()
     {
-        return $this->_manager->getBasePath() . $this->resolveInternalPath();
+        return $this->_manager->getBasePath() . '/' . $this->resolveInternalPath();
     }
 
     /**
