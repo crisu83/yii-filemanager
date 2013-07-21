@@ -146,7 +146,7 @@ class File extends ActiveRecord
      */
     public function getContents()
     {
-        return file_get_contents($this->resolvePath());
+        return readfile($this->resolvePath());
     }
 
     /**
