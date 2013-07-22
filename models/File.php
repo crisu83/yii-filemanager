@@ -106,11 +106,15 @@ class File extends ActiveRecord
 
     /**
      * Returns the full filename for this file.
+     * @param string $extension the file extension.
      * @return string the filename.
      */
-    public function resolveFilename()
+    public function resolveFilename($extension = null)
     {
-        return $this->name . '-' . $this->id . '.' . $this->extension;
+        if ($extension === null) {
+            $extension = $this->extension;
+        }
+        return $this->name . '-' . $this->id . '.' . $extension;
     }
 
     /**
