@@ -177,7 +177,7 @@ class FileManager extends CApplicationComponent
             $path[] = Yii::getPathOfAlias($this->basePath);
         }
         $path[] = $this->fileDir;
-        return implode('/', $path);
+        return implode('/', $path) . '/';
     }
 
     /**
