@@ -20,7 +20,7 @@
  * @property string $byteSize
  * @property string $createdAt
  */
-class File extends ActiveRecord
+class File extends CActiveRecord
 {
     /** @var FileManager */
     protected $_manager;
