@@ -11,13 +11,14 @@
  * This is the model class for table "file".
  *
  * The followings are the available columns in table 'file':
- * @property string $id
+ * @property integer $id
  * @property string $name
  * @property string $extension
  * @property string $path
  * @property string $filename
  * @property string $mimeType
- * @property string $byteSize
+ * @property integer $byteSize
+ * @property string $hash
  * @property string $createdAt
  */
 class File extends CActiveRecord
@@ -50,10 +51,10 @@ class File extends CActiveRecord
     {
         return array(
             array('name, extension, filename, mimeType, byteSize, createdAt', 'required'),
-            array('name, path, extension, filename, mimeType', 'length', 'max' => 255),
+            array('name, path, extension, filename, mimeType, hash', 'length', 'max' => 255),
             array('byteSize', 'length', 'max' => 10),
             // The following rule is used by search().
-            array('id, name, path, extension, filename, mimeType, byteSize, createdAt', 'safe', 'on' => 'search'),
+            array('id, name, path, extension, filename, mimeType, byteSize, hash, createdAt', 'safe', 'on' => 'search'),
         );
     }
 
@@ -78,6 +79,7 @@ class File extends CActiveRecord
             'filename'  => Yii::t('label', 'Filename'),
             'mimeType'  => Yii::t('label', 'Mime type'),
             'byteSize'  => Yii::t('label', 'Byte size'),
+            'hash'      => Yii::t('label', 'Hash'),
             'createdAt' => Yii::t('label', 'Created'),
         );
     }
@@ -97,6 +99,7 @@ class File extends CActiveRecord
         $criteria->compare('filename', $this->filename, true);
         $criteria->compare('mimeType', $this->mimeType, true);
         $criteria->compare('byteSize', $this->byteSize, true);
+        $criteria->compare('hash', $this->hash, true);
         $criteria->compare('createdAt', $this->createdAt, true);
 
         return new CActiveDataProvider($this, array(
@@ -151,6 +154,16 @@ class File extends CActiveRecord
     public function getContents()
     {
         return readfile($this->resolvePath());
+    }
+
+    /**
+     * Returns the hash for this file.
+     * Override this method to change how the hash is calculated.
+     * @return string the hash.
+     */
+    public function calculateHash()
+    {
+        return hash_file('md5', $this->resolvePath());
     }
 
     /**
