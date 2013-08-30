@@ -15,7 +15,7 @@ class FileBehavior extends CActiveRecordBehavior
     /**
      * @var string the name of the model attribute that holds the file id (defaults to 'fileId').
      */
-    public $fileIdAttribute = 'fileId';
+    public $idAttribute = 'fileId';
     /**
      * @var string the component id for the file manager component (defaults to 'fileManager').
      */
@@ -34,7 +34,13 @@ class FileBehavior extends CActiveRecordBehavior
      */
     public function saveFile($file, $name = null, $path = null)
     {
-        return $this->getFileManager()->saveModel($file, $name, $path);
+        $model = $this->getFileManager()->saveModel($file, $name, $path);
+        if ($model === null) {
+            return null;
+        }
+        $this->owner->{$this->idAttribute} = $model->id;
+        $this->owner->save(true, array($this->idAttribute));
+        return $model;
     }
 
     /**
@@ -44,7 +50,7 @@ class FileBehavior extends CActiveRecordBehavior
      */
     public function loadFile()
     {
-        $id = $this->owner->{$this->fileIdAttribute};
+        $id = $this->owner->{$this->idAttribute};
         return $this->getFileManager()->loadModel($id);
     }
 
@@ -54,7 +60,7 @@ class FileBehavior extends CActiveRecordBehavior
      */
     public function deleteFile()
     {
-        $id = $this->owner->{$this->fileIdAttribute};
+        $id = $this->owner->{$this->idAttribute};
         return $this->getFileManager()->deleteModel($id);
     }
 
@@ -86,7 +92,7 @@ class FileBehavior extends CActiveRecordBehavior
      * Returns the file manager application component.
      * @return FileManager the component.
      */
-    public function getFileManager()
+    protected function getFileManager()
     {
         if (isset($this->_fileManager)) {
             return $this->_fileManager;

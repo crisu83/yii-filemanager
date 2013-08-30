@@ -12,8 +12,9 @@ Yii::import('vendor.crisu83.yii-extension.behaviors.ComponentBehavior');
 /**
  * Application component for managing files.
  *
- * @method createPathAlias($alias, $path) via ComponentBehavior
- * @method import($alias) via ComponentBehavior
+ * Methods accessible through the 'ComponentBehavior' class:
+ * @method createPathAlias($alias, $path)
+ * @method import($alias)
  */
 class FileManager extends CApplicationComponent
 {
@@ -85,6 +86,8 @@ class FileManager extends CApplicationComponent
         if (!$file->saveAs($filePath)) {
             throw new CException('Failed to save file. File could not be saved.');
         }
+        $model->hash = $model->calculateHash();
+        $model->save(true, array('hash'));
         return $model;
     }
 
@@ -132,10 +135,7 @@ class FileManager extends CApplicationComponent
      */
     public function sendFile($file, $terminate = true)
     {
-        $filename = $file->resolveFilename();
-        $content = $file->getContents();
-        $mimeType = $file->mimeType;
-        Yii::app()->request->sendFile($filename, $content, $mimeType, $terminate);
+        Yii::app()->request->sendFile($file->resolveFilename(), $file->getContents(), $file->mimeType, $terminate);
     }
 
     /**
@@ -146,8 +146,7 @@ class FileManager extends CApplicationComponent
      */
     public function xSendFile($file, $options = array())
     {
-        $filePath = $file->resolvePath();
-        Yii::app()->request->xSendFile($filePath, $options);
+        Yii::app()->request->xSendFile($file->resolvePath(), $options);
     }
 
     /**
