@@ -7,14 +7,19 @@
  * @package crisu83.yii-filemanager.components
  */
 
-Yii::import('vendor.crisu83.yii-extension.behaviors.ComponentBehavior');
-
 /**
  * Application component for managing files.
  *
  * Methods accessible through the 'ComponentBehavior' class:
  * @method createPathAlias($alias, $path)
  * @method import($alias)
+ * @method string publishAssets($path, $forceCopy = false)
+ * @method void registerCssFile($url, $media = '')
+ * @method void registerScriptFile($url, $position = null)
+ * @method string resolveScriptVersion($filename, $minified = false)
+ * @method CClientScript getClientScript()
+ * @method void registerDependencies($dependencies)
+ * @method string resolveDependencyPath($name)
  */
 class FileManager extends CApplicationComponent
 {
@@ -34,6 +39,13 @@ class FileManager extends CApplicationComponent
      * @var string the name of the file model class.
      */
     public $modelClass = 'File';
+    /**
+     * @var array the dependencies (name => path).
+     * Change these to the correct ones if you are not using Composer.
+     */
+    public $dependencies = array(
+        'yii-extension' => 'vendor.crisu83.yii-extension',
+    );
 
     /**
      * Initializes the component.
@@ -41,7 +53,13 @@ class FileManager extends CApplicationComponent
     public function init()
     {
         parent::init();
+        if (!isset($this->dependencies['yii-extension'])) {
+            throw new CException('Dependency "yii-extension" not found in ' . __CLASS__ . '.dependencies.');
+        }
+        $yiiExtensionAlias = $this->dependencies['yii-extension'];
+        Yii::import($yiiExtensionAlias . '.behaviors.ComponentBehavior');
         $this->attachBehavior('ext', new ComponentBehavior);
+        $this->registerDependencies($this->dependencies);
         $this->createPathAlias('fileManager', realpath(__DIR__ . DIRECTORY_SEPARATOR . '..'));
         $this->import('models.*');
     }
@@ -55,6 +73,9 @@ class FileManager extends CApplicationComponent
     {
         /* @var File $model */
         $model = new $this->modelClass($scenario);
+        if (!$model instanceof File) {
+            throw new CException('File model must extend the "File" class.');
+        }
         $model->setManager($this);
         return $model;
     }
