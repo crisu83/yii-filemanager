@@ -131,11 +131,12 @@ class File extends CActiveRecord
 
     /**
      * Returns the path for this file.
+     * @param boolean $absolute whether the path should be absolute.
      * @return string the path.
      */
-    public function resolvePath()
+    public function resolvePath($absolute = true)
     {
-        return $this->_manager->getBasePath() . '/' . $this->resolveInternalPath();
+        return $this->_manager->getBasePath($absolute) . '/' . $this->resolveInternalPath();
     }
 
     /**

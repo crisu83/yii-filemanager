@@ -47,21 +47,33 @@ class FileManager extends CApplicationComponent
     }
 
     /**
+     * Creates a file model.
+     * @param string $scenario the scenario name.
+     * @return File the file model.
+     */
+    public function createModel($scenario = 'insert')
+    {
+        /* @var File $model */
+        $model = new $this->modelClass($scenario);
+        $model->setManager($this);
+        return $model;
+    }
+
+    /**
      * Saves the given file both in the database and on the hard disk.
      * @param CUploadedFile $file the uploaded file.
      * @param string $name the new name for the file.
      * @param string $path the path relative to the base path.
+     * @param string $scenario the scenario name..
      * @throws CException if saving the image fails.
      * @return File the model.
      */
-    public function saveModel($file, $name = null, $path = null)
+    public function saveModel($file, $name = null, $path = null, $scenario = 'insert')
     {
         if (!$file instanceof CUploadedFile) {
             throw new CException('Failed to save file. File is not an instance of CUploadedFile.');
         }
-        /* @var File $model */
-        $model = new $this->modelClass;
-        $model->setManager($this);
+        $model = $this->createModel($scenario);
         $model->extension = strtolower($file->getExtensionName());
         $model->filename  = $file->getName();
         $model->mimeType  = $file->getType();
@@ -78,7 +90,7 @@ class FileManager extends CApplicationComponent
         if (!$model->save()) {
             throw new CException('Failed to save file. Database record could not be saved.');
         }
-        $filePath = $this->getBasePath() . $model->getPath();
+        $filePath = $this->getBasePath(true) . '/' . $model->getPath();
         if (!file_exists($filePath) && !$this->createDirectory($filePath)) {
             throw new CException('Failed to save file. Directory could not be created.');
         }
@@ -150,6 +162,21 @@ class FileManager extends CApplicationComponent
     }
 
     /**
+     * Returns the path to the files folder.
+     * @param boolean $absolute whether to return an absolute path.
+     * @return string the path.
+     */
+    public function getBasePath($absolute = false)
+    {
+        $path = array();
+        if ($absolute) {
+            $path[] = Yii::getPathOfAlias($this->basePath);
+        }
+        $path[] = $this->fileDir;
+        return implode('/', $path);
+    }
+
+    /**
      * Returns the url to the files folder.
      * @param boolean $absolute whether to return an absolute url.
      * @return string the url.
@@ -162,21 +189,6 @@ class FileManager extends CApplicationComponent
         }
         $url[] = $this->fileDir;
         return implode('/', $url);
-    }
-
-    /**
-     * Returns the path to the files folder.
-     * @param boolean $absolute whether to return an absolute path.
-     * @return string the path.
-     */
-    public function getBasePath($absolute = true)
-    {
-        $path = array();
-        if ($absolute) {
-            $path[] = Yii::getPathOfAlias($this->basePath);
-        }
-        $path[] = $this->fileDir;
-        return implode('/', $path) . '/';
     }
 
     /**
