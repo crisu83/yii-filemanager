@@ -9,8 +9,8 @@
             "email": "ChristofferNiska@gmail.com"
         }
     ],
-    "minimum-stability": "dev",
     "require": {
-        "crisu83/yii-extension": "dev-no-namespaces"
-    }
+        "crisu83/yii-extension": ">=1.1.0"
+    },
+    "minimum-stability": "dev"
 }
