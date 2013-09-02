@@ -203,12 +203,15 @@ class FileManager extends CApplicationComponent
      */
     public function getBaseUrl($absolute = false)
     {
-        $url = array();
+        $path = array();
         if ($absolute) {
-            $url[] = $this->baseUrl !== null ? $this->baseUrl : Yii::app()->request->baseUrl;
+            if (($basePath = Yii::getPathOfAlias($this->basePath)) === false && is_dir($this->basePath)) {
+                $basePath = realpath($this->basePath);
+            }
+            $path[] = $basePath;
         }
-        $url[] = $this->fileDir;
-        return implode('/', $url);
+        $path[] = $this->fileDir;
+        return implode('/', $path) . '/';
     }
 
     /**
