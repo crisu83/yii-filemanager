@@ -59,7 +59,7 @@ class FileManager extends CApplicationComponent
         Yii::import($this->dependencies['yii-extension'] . '.behaviors.*');
         $this->attachBehavior('ext', new ComponentBehavior);
         $this->registerDependencies($this->dependencies);
-        $this->createPathAlias('fileManager', realpath(__DIR__ . DIRECTORY_SEPARATOR . '..'));
+        $this->createPathAlias('fileManager', realpath(__DIR__ . '/..'));
         $this->import('models.*');
     }
 
@@ -208,10 +208,10 @@ class FileManager extends CApplicationComponent
     {
         $url = array();
         if ($absolute) {
-            $url[] = $this->baseUrl !== null ? $this->baseUrl : Yii::app()->request->baseUrl;
+            $url[] = $this->baseUrl !== null ? trim($this->baseUrl, '/') : Yii::app()->request->baseUrl;
         }
         $url[] = $this->fileDir;
-        return implode('/', $url);
+        return ltrim(implode('/', $url) . '/', '/');
     }
 
     /**
@@ -241,7 +241,7 @@ class FileManager extends CApplicationComponent
      * @param string $name the filename.
      * @return string the normalized filename.
      */
-    protected function normalizeFilename($name)
+    public function normalizeFilename($name)
     {
         $name = str_replace(str_split('/\?%*:|"<>'), '', $name);
         return str_replace(' ', '-', $name); // for convenience
