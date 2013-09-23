@@ -122,11 +122,12 @@ class File extends CActiveRecord
 
     /**
      * Returns the url for this file.
+     * @param boolean $absolute whether the url should be absolute.
      * @return string the url.
      */
-    public function resolveUrl()
+    public function resolveUrl($absolute = false)
     {
-        return $this->_manager->getBaseUrl() . '/' . $this->resolveInternalPath();
+        return $this->_manager->getBaseUrl($absolute) . '/' . $this->resolveInternalPath();
     }
 
     /**
