@@ -9,12 +9,6 @@
             "email": "ChristofferNiska@gmail.com"
         }
     ],
-    "repositories": [
-        {
-            "type": "composer",
-            "url": "http://packages.phundament.com"
-        }
-    ],
     "require": {
         "crisu83/yii-extension": ">=1.1.1"
     },
