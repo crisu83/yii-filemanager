@@ -144,7 +144,7 @@ class File extends CActiveRecord
      * Returns the internal path to the within the sub-directory.
      * @return string the path.
      */
-    protected function resolveInternalPath()
+    public function resolveInternalPath()
     {
         return $this->getPath() . $this->resolveFilename();
     }
