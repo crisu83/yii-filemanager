@@ -196,7 +196,7 @@ class FileManager extends CApplicationComponent
             $path[] = $basePath;
         }
         $path[] = $this->fileDir;
-        return implode('/', $path) . '/';
+        return implode('/', $path);
     }
 
     /**
@@ -211,7 +211,7 @@ class FileManager extends CApplicationComponent
             $url[] = $this->baseUrl !== null ? trim($this->baseUrl, '/') : Yii::app()->request->baseUrl;
         }
         $url[] = $this->fileDir;
-        return ltrim(implode('/', $url) . '/', '/');
+        return ltrim(implode('/', $url), '/');
     }
 
     /**

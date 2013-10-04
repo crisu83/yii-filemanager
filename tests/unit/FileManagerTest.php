@@ -69,15 +69,15 @@ class FileManagerTest extends \YiiTest
     public function testGetBasePath()
     {
         $manager = $this->getManager();
-        $this->assertEquals('files/', $manager->getBasePath());
+        $this->assertEquals('files', $manager->getBasePath());
         $this->assertNotEquals(false, strpos($manager->getBasePath(true), 'yii-filemanager/tests/files'));
     }
 
     public function testGetBaseUrl()
     {
         $manager = $this->getManager();
-        $this->assertEquals('files/', $manager->getBaseUrl());
-        $this->assertEquals('test/files/', $manager->getBaseUrl(true));
+        $this->assertEquals('files', $manager->getBaseUrl());
+        $this->assertEquals('test/files', $manager->getBaseUrl(true));
     }
 
     public function testCreateDirectory()
