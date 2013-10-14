@@ -25,20 +25,27 @@ class FileBehavior extends CActiveRecordBehavior
     public $uploadAttribute = 'upload';
 
     /**
+     * @var string the component id for the file manager component (defaults to 'fileManager').
+     */
+    public $componentID = 'fileManager';
+
+    /**
      * Saves the given file both in the database and on the hard disk.
      * @param string $name new name for the file.
      * @param string $path path relative to the base path.
      * @param array $saveAttributes attributes that should be passed to the save method.
+     * @param string $scenario name of the scenario.
      * @return File the model.
+     * @throws CException if the owner cannot be saved.
      * @see FileManager::saveModel
      */
-    public function saveFile($name = null, $path = null, $saveAttributes = array())
+    public function saveFile($name = null, $path = null, $saveAttributes = array(), $scenario = 'insert')
     {
         $this->owner->{$this->uploadAttribute} = CUploadedFile::getInstance(
             $this->owner,
             $this->uploadAttribute
         );
-        $model = $this->getFileManager()->saveModel($this->owner->{$this->uploadAttribute}, $name, $path);
+        $model = $this->getFileManager()->saveModel($this->owner->{$this->uploadAttribute}, $name, $path, $scenario);
         foreach (array($this->idAttribute, $this->uploadAttribute) as $attribute) {
             if (!in_array($attribute, $saveAttributes)) {
                 $saveAttributes[] = $attribute;
@@ -58,8 +65,7 @@ class FileBehavior extends CActiveRecordBehavior
      */
     public function loadFile()
     {
-        $id = $this->owner->{$this->idAttribute};
-        return $this->getFileManager()->loadModel($id);
+        return $this->getFileManager()->loadModel($this->owner->{$this->idAttribute});
     }
 
     /**
@@ -68,32 +74,27 @@ class FileBehavior extends CActiveRecordBehavior
      */
     public function deleteFile()
     {
-        $id = $this->owner->{$this->idAttribute};
-        return $this->getFileManager()->deleteModel($id);
+        return $this->getFileManager()->deleteModel($this->owner->{$this->idAttribute});
     }
 
     /**
      * Returns the full path for the given model.
-     * @param File $model the file model.
      * @return string the path.
      * @see FileManager::resolveFileUrl
      */
     public function resolveFileUrl()
     {
-        $model = $this->loadFile();
-        return $model->resolveUrl($model);
+        return $this->loadFile()->resolveUrl();
     }
 
     /**
      * Returns the full url for the given model.
-     * @param File $model the file model.
      * @return string the url.
      * @see FileManager::resolveFilePath
      */
     public function resolveFilePath()
     {
-        $model = $this->loadFile();
-        return $model->resolvePath($model);
+        return $this->loadFile()->resolvePath();
     }
 
     /**
