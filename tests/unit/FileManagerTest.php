@@ -1,7 +1,5 @@
 <?php
 
-use Codeception\Util\Stub;
-
 class FileManagerTest extends \YiiTest
 {
    /**
@@ -14,7 +12,7 @@ class FileManagerTest extends \YiiTest
         $this->mockApplication(
             array(
                 'aliases' => array(
-                    'project' => __DIR__ . '/../..',
+                    'project' => realpath(__DIR__ . '/../..'),
                     'vendor' => 'project.vendor',
                 ),
                 'components' => array(

@@ -23,8 +23,10 @@
  */
 class File extends CActiveRecord
 {
-    /** @var FileManager */
-    protected $_manager;
+    /**
+     * @var string file manager component ID.
+     */
+    public $managerID = 'fileManager';
 
     /**
      * Returns the static model of the specified AR class.
@@ -127,7 +129,7 @@ class File extends CActiveRecord
      */
     public function resolveUrl($absolute = false)
     {
-        return $this->_manager->getBaseUrl($absolute) . '/' . $this->resolveInternalPath();
+        return $this->getManager()->getBaseUrl($absolute) . '/' . $this->resolveInternalPath();
     }
 
     /**
@@ -137,7 +139,7 @@ class File extends CActiveRecord
      */
     public function resolvePath($absolute = true)
     {
-        return $this->_manager->getBasePath($absolute) . '/' . $this->resolveInternalPath();
+        return $this->getManager()->getBasePath($absolute) . '/' . $this->resolveInternalPath();
     }
 
     /**
@@ -178,11 +180,11 @@ class File extends CActiveRecord
     }
 
     /**
-     * Returns the file manager component.
-     * @param FileManager $manager the component.
+     * Returns the file manager.
+     * @return FileManager component instance.
      */
-    public function setManager($manager)
+    public function getManager()
     {
-        $this->_manager = $manager;
+        return Yii::app()->getComponent($this->managerID);
     }
 }
