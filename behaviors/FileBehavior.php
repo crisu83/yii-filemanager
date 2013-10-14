@@ -9,37 +9,45 @@
 
 /**
  * File behavior for active records that are associated with files.
+ *
+ * @property CActiveRecord $owner
  */
 class FileBehavior extends CActiveRecordBehavior
 {
     /**
-     * @var string the name of the model attribute that holds the file id (defaults to 'fileId').
+     * @var string name of the model attribute that holds the file id (defaults to 'fileId').
      */
     public $idAttribute = 'fileId';
-    /**
-     * @var string the component id for the file manager component (defaults to 'fileManager').
-     */
-    public $componentID = 'fileManager';
 
-    /** @var FileManager */
-    private $_fileManager;
+    /**
+     * @var string name of the model attribute that holds the uploaded file (defaults to 'upload').
+     */
+    public $uploadAttribute = 'upload';
 
     /**
      * Saves the given file both in the database and on the hard disk.
-     * @param CUploadedFile $file the uploaded file.
-     * @param string $name the new name for the file.
-     * @param string $path the path relative to the base path.
+     * @param string $name new name for the file.
+     * @param string $path path relative to the base path.
+     * @param array $saveAttributes attributes that should be passed to the save method.
      * @return File the model.
      * @see FileManager::saveModel
      */
-    public function saveFile($file, $name = null, $path = null)
+    public function saveFile($name = null, $path = null, $saveAttributes = array())
     {
-        $model = $this->getFileManager()->saveModel($file, $name, $path);
-        if ($model === null) {
-            return null;
+        $this->owner->{$this->uploadAttribute} = CUploadedFile::getInstance(
+            $this->owner,
+            $this->uploadAttribute
+        );
+        $model = $this->getFileManager()->saveModel($this->owner->{$this->uploadAttribute}, $name, $path);
+        foreach (array($this->idAttribute, $this->uploadAttribute) as $attribute) {
+            if (!in_array($attribute, $saveAttributes)) {
+                $saveAttributes[] = $attribute;
+            }
         }
         $this->owner->{$this->idAttribute} = $model->id;
-        $this->owner->save(true, array($this->idAttribute));
+        if (!$this->owner->save(true, $saveAttributes)) {
+            throw new CException('Could not save active record.');
+        }
         return $model;
     }
 
@@ -94,10 +102,6 @@ class FileBehavior extends CActiveRecordBehavior
      */
     protected function getFileManager()
     {
-        if (isset($this->_fileManager)) {
-            return $this->_fileManager;
-        } else {
-            return $this->_fileManager = Yii::app()->getComponent($this->componentID);
-        }
+        return Yii::app()->getComponent($this->componentID);
     }
 }

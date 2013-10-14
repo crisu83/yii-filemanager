@@ -27,25 +27,26 @@ class FileManager extends CApplicationComponent
      * @var string name of the files directory.
      */
     public $fileDir = 'files';
+
     /**
      * @var string the base path (defaults to 'webroot').
      */
     public $basePath = 'webroot';
+
     /**
      * @var string the base url. If omitted the base url for the request will be used.
      */
     public $baseUrl;
+
     /**
      * @var string the name of the file model class.
      */
     public $modelClass = 'File';
+
     /**
-     * @var array the dependencies (name => path).
-     * Change these to the correct ones if you are not using Composer.
+     * @var string path to the yii-extension library.
      */
-    public $dependencies = array(
-        'yii-extension' => 'vendor.crisu83.yii-extension',
-    );
+    public $yiiExtensionPath = 'vendor.crisu83.yii-extension';
 
     /**
      * Initializes the component.
@@ -53,12 +54,12 @@ class FileManager extends CApplicationComponent
     public function init()
     {
         parent::init();
-        if (!isset($this->dependencies['yii-extension'])) {
-            throw new CException('Dependency "yii-extension" not found in ' . __CLASS__ . '.dependencies.');
+        if (($alias = Yii::getPathOfAlias($this->yiiExtensionPath)) !== false) {
+            $this->yiiExtensionPath = $alias;
         }
-        Yii::import($this->dependencies['yii-extension'] . '.behaviors.*');
+        /** @noinspection PhpIncludeInspection */
+        require_once($this->yiiExtensionPath . '/behaviors/ComponentBehavior.php');
         $this->attachBehavior('ext', new ComponentBehavior);
-        $this->registerDependencies($this->dependencies);
         $this->createPathAlias('fileManager', realpath(__DIR__ . '/..'));
         $this->import('models.*');
     }
