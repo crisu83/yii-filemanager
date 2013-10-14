@@ -46,7 +46,7 @@ class FileManager extends CApplicationComponent
     /**
      * @var string path to the yii-extension library.
      */
-    public $yiiExtensionPath = 'vendor.crisu83.yii-extension';
+    public $yiiExtensionAlias = 'vendor.crisu83.yii-extension';
 
     /**
      * Initializes the component.
@@ -54,11 +54,7 @@ class FileManager extends CApplicationComponent
     public function init()
     {
         parent::init();
-        if (($alias = Yii::getPathOfAlias($this->yiiExtensionPath)) !== false) {
-            $this->yiiExtensionPath = $alias;
-        }
-        /** @noinspection PhpIncludeInspection */
-        require_once($this->yiiExtensionPath . '/behaviors/ComponentBehavior.php');
+        Yii::import($this->yiiExtensionAlias . '.behaviors.*');
         $this->attachBehavior('ext', new ComponentBehavior);
         $this->createPathAlias('fileManager', realpath(__DIR__ . '/..'));
         $this->import('models.*');
@@ -68,6 +64,7 @@ class FileManager extends CApplicationComponent
      * Creates a file model.
      * @param string $scenario the scenario name.
      * @return File the file model.
+     * @throws CException if the file model does not extend the "File" class.
      */
     public function createModel($scenario = 'insert')
     {
@@ -76,7 +73,6 @@ class FileManager extends CApplicationComponent
         if (!$model instanceof File) {
             throw new CException('File model must extend the "File" class.');
         }
-        $model->setManager($this);
         return $model;
     }
 
@@ -85,7 +81,7 @@ class FileManager extends CApplicationComponent
      * @param CUploadedFile $file the uploaded file.
      * @param string $name the new name for the file.
      * @param string $path the path relative to the base path.
-     * @param string $scenario the scenario name..
+     * @param string $scenario name of the scenario.
      * @throws CException if saving the image fails.
      * @return File the model.
      */
@@ -137,7 +133,6 @@ class FileManager extends CApplicationComponent
         if ($model === null) {
             throw new CException('Failed to load file. Database record not found.');
         }
-        $model->setManager($this);
         return $model;
     }
 
@@ -234,7 +229,7 @@ class FileManager extends CApplicationComponent
      */
     public function deleteDirectory($path)
     {
-        return file_exists($path) ? unlink($path) : false;
+        return is_dir($path) && file_exists($path) ? unlink($path) : false;
     }
 
     /**
