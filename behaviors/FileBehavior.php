@@ -27,7 +27,7 @@ class FileBehavior extends CActiveRecordBehavior
     /**
      * @var string the component id for the file manager component (defaults to 'fileManager').
      */
-    public $componentID = 'fileManager';
+    public $managerID = 'fileManager';
 
     /**
      * Saves the given file both in the database and on the hard disk.
@@ -45,15 +45,16 @@ class FileBehavior extends CActiveRecordBehavior
             $this->owner,
             $this->uploadAttribute
         );
-        $model = $this->getFileManager()->saveModel($this->owner->{$this->uploadAttribute}, $name, $path, $scenario);
-        foreach (array($this->idAttribute, $this->uploadAttribute) as $attribute) {
-            if (!in_array($attribute, $saveAttributes)) {
-                $saveAttributes[] = $attribute;
-            }
+        if (!in_array($this->uploadAttribute, $saveAttributes)) {
+            $saveAttributes[] = $this->uploadAttribute;
         }
+        if (!$this->owner->validate($saveAttributes)) {
+            throw new CException('Failed to save file.');
+        }
+        $model = $this->getManager()->saveModel($this->owner->{$this->uploadAttribute}, $name, $path, $scenario);
         $this->owner->{$this->idAttribute} = $model->id;
-        if (!$this->owner->save(true, $saveAttributes)) {
-            throw new CException('Could not save active record.');
+        if (!$this->owner->save(true, array($this->idAttribute))) {
+            throw new CException('Failed to save file id to owner.');
         }
         return $model;
     }
@@ -65,7 +66,7 @@ class FileBehavior extends CActiveRecordBehavior
      */
     public function loadFile()
     {
-        return $this->getFileManager()->loadModel($this->owner->{$this->idAttribute});
+        return $this->getManager()->loadModel($this->owner->{$this->idAttribute});
     }
 
     /**
@@ -74,7 +75,7 @@ class FileBehavior extends CActiveRecordBehavior
      */
     public function deleteFile()
     {
-        return $this->getFileManager()->deleteModel($this->owner->{$this->idAttribute});
+        return $this->getManager()->deleteModel($this->owner->{$this->idAttribute});
     }
 
     /**
@@ -101,8 +102,8 @@ class FileBehavior extends CActiveRecordBehavior
      * Returns the file manager application component.
      * @return FileManager the component.
      */
-    protected function getFileManager()
+    protected function getManager()
     {
-        return Yii::app()->getComponent($this->componentID);
+        return Yii::app()->getComponent($this->managerID);
     }
 }
