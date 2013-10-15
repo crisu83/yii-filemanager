@@ -71,7 +71,7 @@ class FileManager extends CApplicationComponent
         /* @var File $model */
         $model = new $this->modelClass($scenario);
         if (!$model instanceof File) {
-            throw new CException('File model must extend the "File" class.');
+            throw new CException(sprintf('Model class "%s" must extend "File".', $this->modelClass));
         }
         return $model;
     }
@@ -82,42 +82,75 @@ class FileManager extends CApplicationComponent
      * @param string $name the new name for the file.
      * @param string $path the path relative to the base path.
      * @param string $scenario name of the scenario.
-     * @throws CException if saving the image fails.
      * @return File the model.
+     * @throws CException if saving the image fails.
      */
     public function saveModel($file, $name = null, $path = null, $scenario = 'insert')
     {
         if (!$file instanceof CUploadedFile) {
-            throw new CException('Failed to save file. File is not an instance of CUploadedFile.');
+            throw new CException('File is not an instance of "CUploadedFile".');
+        }
+        if ($file->hasError) {
+            throw new CException(sprintf(
+                'File could not be uploaded: %s',
+                $this->getUploadError($file->getError())
+            ));
         }
         $model = $this->createModel($scenario);
         $model->extension = strtolower($file->getExtensionName());
-        $model->filename  = $file->getName();
-        $model->mimeType  = $file->getType();
-        $model->byteSize  = $file->getSize();
+        $model->filename = $file->getName();
+        $model->mimeType = CFileHelper::getMimeType($file->getTempName());
+        $model->byteSize = $file->getSize();
         $model->createdAt = date('Y-m-d H:i:s');
         if ($name === null) {
             $filename = $model->filename;
-            $name     = substr($filename, 0, strrpos($filename, '.'));
+            $name = substr($filename, 0, strrpos($filename, '.'));
         }
         $model->name = $this->normalizeFilename($name);
         if ($path !== null) {
             $model->path = trim($path, '/');
         }
         if (!$model->save()) {
-            throw new CException('Failed to save file. Database record could not be saved.');
+            throw new CException('Failed to save the file model.');
         }
         $filePath = $this->getBasePath(true) . '/' . $model->getPath();
         if (!file_exists($filePath) && !$this->createDirectory($filePath)) {
-            throw new CException('Failed to save file. Directory could not be created.');
+            throw new CException('Failed to create the directory for the file.');
         }
         $filePath .= $model->resolveFilename();
         if (!$file->saveAs($filePath)) {
-            throw new CException('Failed to save file. File could not be saved.');
+            throw new CException('Failed to save the file.');
         }
         $model->hash = $model->calculateHash();
         $model->save(true, array('hash'));
         return $model;
+    }
+
+    /**
+     * Returns the upload error message for the given error code.
+     * @param int $code the error code.
+     * @return string the message.
+     */
+    protected function getUploadError($code)
+    {
+        switch ($code) {
+            case UPLOAD_ERR_INI_SIZE:
+            case UPLOAD_ERR_FORM_SIZE:
+                return 'File too large.';
+            case UPLOAD_ERR_PARTIAL:
+                return 'File upload was not completed.';
+            case UPLOAD_ERR_NO_FILE:
+                return 'No file was uploaded.';
+            case UPLOAD_ERR_NO_TMP_DIR:
+                return 'Temporary folder missing.';
+            case UPLOAD_ERR_CANT_WRITE:
+                return 'Failed to write to disk';
+            case UPLOAD_ERR_EXTENSION:
+                return 'A PHP extension stopped the file upload.';
+            case UPLOAD_ERR_OK:
+            default:
+                return 'OK';
+        }
     }
 
     /**
@@ -131,7 +164,7 @@ class FileManager extends CApplicationComponent
         /* @var File $model */
         $model = File::model()->findByPk($id);
         if ($model === null) {
-            throw new CException('Failed to load file. Database record not found.');
+            throw new CException(sprintf('Failed to locale file model with id %d.', $id));
         }
         return $model;
     }
@@ -147,10 +180,10 @@ class FileManager extends CApplicationComponent
         $model    = $this->loadModel($id);
         $filePath = $model->resolvePath();
         if (file_exists($filePath) && !unlink($filePath)) {
-            throw new CException('Failed to delete file. File could not be deleted.');
+            throw new CException('Failed to delete the file.');
         }
         if (!$model->delete()) {
-            throw new CException('Failed to delete file. Database record could not be deleted.');
+            throw new CException('Failed to delete the file model.');
         }
         return true;
     }
