@@ -51,12 +51,23 @@ class FileBehavior extends CActiveRecordBehavior
 
     /**
      * Actions to take before validating the owner of this behavior.
-     * @param CModelEvent $event event parameter
+     * @param CModelEvent $event event parameter.
      */
     protected function beforeValidate($event)
     {
         if ($this->autoSave) {
-            $this->saveFile($this->name, $this->path);
+            $this->owner->{$this->uploadAttribute} = $this->getUploadedFile();
+        }
+    }
+
+    /**
+     * Actions to take before saving the owner of this behavior.
+     * @param CModelEvent $event event parameter.
+     */
+    protected function beforeSave($event)
+    {
+        if ($this->autoSave) {
+            $this->saveFile($this->owner->{$this->uploadAttribute}, $this->name, $this->path);
         }
     }
 
@@ -72,22 +83,27 @@ class FileBehavior extends CActiveRecordBehavior
     }
 
     /**
+     * Returns the uploaded image file.
+     * @return CUploadedFile the file.
+     */
+    public function getUploadedFile()
+    {
+        return CUploadedFile::getInstance($this->owner, $this->uploadAttribute);
+    }
+
+    /**
      * Saves the given file both in the database and on the hard disk.
+     * @param CUploadedFile $file the uploaded file.
      * @param string $name new name for the file.
      * @param string $path path relative to the base path.
      * @param array $saveAttributes attributes that should be passed to the save method.
      * @param string $scenario name of the scenario.
      * @return File the model.
-     * @throws CException if the owner cannot be saved.
      * @see FileManager::saveModel
      */
-    public function saveFile($name = null, $path = null, $scenario = 'insert')
+    public function saveFile($file, $name = null, $path = null, $scenario = 'insert')
     {
-        $this->owner->{$this->uploadAttribute} = CUploadedFile::getInstance(
-            $this->owner,
-            $this->uploadAttribute
-        );
-        $model = $this->getManager()->saveModel($this->owner->{$this->uploadAttribute}, $name, $path, $scenario);
+        $model = $this->getManager()->saveModel($file, $name, $path, $scenario);
         $this->owner->{$this->idAttribute} = $model->id;
         return $model;
     }
