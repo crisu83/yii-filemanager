@@ -96,26 +96,26 @@ class FileBehavior extends CActiveRecordBehavior
      * @param CUploadedFile $file the uploaded file.
      * @param string $name new name for the file.
      * @param string $path path relative to the base path.
-     * @param array $saveAttributes attributes that should be passed to the save method.
      * @param string $scenario name of the scenario.
      * @return File the model.
      * @see FileManager::saveModel
      */
     public function saveFile($file, $name = null, $path = null, $scenario = 'insert')
     {
-        $model = $this->getManager()->saveModel($file, $name, $path, $scenario);
+        $model = $this->getManager()->saveModel(new UploadedFile($file), $name, $path, $scenario);
         $this->owner->{$this->idAttribute} = $model->id;
         return $model;
     }
 
     /**
      * Returns the file with the given id.
+     * @param array $with related models that should be eager-loaded.
      * @return File the model.
      * @see FileManager::loadModel
      */
-    public function loadFile()
+    public function loadFile($with = array())
     {
-        return $this->getManager()->loadModel($this->owner->{$this->idAttribute});
+        return $this->getManager()->loadModel($this->owner->{$this->idAttribute}, $with);
     }
 
     /**
