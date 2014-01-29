@@ -138,7 +138,7 @@ class FileManager extends CApplicationComponent
     public function deleteModel($id)
     {
         if (($model = $this->loadModel($id)) === null) {
-            throw new CException(sprintf('Failed to locate file model with id "%d".'), $id);
+            throw new CException(sprintf('Failed to locate file model with id "%d".', $id));
         }
         $filePath = $model->resolvePath();
         if (file_exists($filePath) && !unlink($filePath)) {
@@ -199,10 +199,10 @@ class FileManager extends CApplicationComponent
     {
         $url = array();
         if ($absolute) {
-            $url[] = $this->baseUrl !== null ? trim($this->baseUrl, '/') : Yii::app()->request->baseUrl;
+            $url[] = $this->baseUrl !== null ? rtrim($this->baseUrl, '/') : Yii::app()->request->baseUrl;
         }
         $url[] = $this->fileDir;
-        return ltrim(implode('/', $url), '/');
+        return rtrim(implode('/', $url), '/');
     }
 
     /**
