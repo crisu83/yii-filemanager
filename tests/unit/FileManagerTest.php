@@ -18,7 +18,7 @@ class FileManagerTest extends \YiiTest
                 'components' => array(
                     'fileManager' => array(
                         'class' => 'project.components.FileManager',
-                        'baseUrl' => '/test',
+                        'baseUrl' => '//test',
                     ),
                 ),
                 'preload' => array(
@@ -75,7 +75,7 @@ class FileManagerTest extends \YiiTest
     {
         $manager = $this->getManager();
         $this->assertEquals('files', $manager->getBaseUrl());
-        $this->assertEquals('test/files', $manager->getBaseUrl(true));
+        $this->assertEquals('//test/files', $manager->getBaseUrl(true));
     }
 
     public function testCreateDirectory()
