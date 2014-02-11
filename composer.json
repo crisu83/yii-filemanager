@@ -17,5 +17,13 @@
         "crisu83/yii-testingtools": "dev-master",
         "yiisoft/yii": ">=1.1.14"
     },
-    "minimum-stability": "dev"
+    "minimum-stability": "dev",
+    "autoload": {
+        "classmap": [
+            "behaviors/",
+            "components/",
+            "models/",
+            "resources/"
+        ]
+    }
 }
