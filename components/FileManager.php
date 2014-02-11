@@ -54,11 +54,8 @@ class FileManager extends CApplicationComponent
     public function init()
     {
         parent::init();
-        Yii::import($this->yiiExtensionAlias . '.behaviors.*');
         $this->attachBehavior('ext', new ComponentBehavior);
-        $this->createPathAlias('fileManager', realpath(__DIR__ . '/..'));
-        $this->import('models.*');
-        $this->import('resources.*');
+        $this->createPathAlias('fileManager', dirname(__DIR__));
     }
 
     /**

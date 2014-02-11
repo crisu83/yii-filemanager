@@ -31,7 +31,6 @@ class FileManagerTest extends \YiiTest
     public function testInit()
     {
         $this->assertNotEquals(false, Yii::getPathOfAlias('fileManager'));
-        $this->assertTrue(class_exists('File'));
     }
 
     public function testCreateModel()
