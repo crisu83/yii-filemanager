@@ -157,7 +157,7 @@ class File extends CActiveRecord
      */
     public function getContents()
     {
-        return readfile($this->resolvePath());
+        return file_get_contents($this->resolvePath());
     }
 
     /**
